@@ -1,27 +1,39 @@
 """
-Shared loader: reads the 30 FIF arrays from output/large/,
-thresholds at the mean to produce binary cloud masks,
-and optionally subsets into 4x8 MODIS-like scenes (1024x2048).
+Shared loader: reads bool child cloud masks from output/masks/ and
+exposes the original API used by the analysis scripts.
+
+Each child on disk is a 1024 x 2048 bool sub-scene. Full 8192^2 parent
+masks are reconstructed on demand by stitching each parent's 4 x 8 grid
+of children.
 """
 
 import numpy as np
 import os
 
-LARGE_DIR = os.path.join(os.path.dirname(__file__), "..", "output", "large")
-N_REALIZATIONS = 30
-N_ANALYSIS = 10  # number of parents to load for analysis
+MASKS_DIR = os.path.join(os.path.dirname(__file__), "..", "output", "masks")
+N_ANALYSIS = 50  # number of parents to load for analysis
+NROWS, NCOLS = 4, 8
 
 
 def load_large_masks(n=N_ANALYSIS):
-    """Load n full 8192^2 binary cloud masks (thresholded at mean)."""
+    """Load n full 8192^2 bool cloud masks (stitched from their children)."""
     masks = []
     for i in range(n):
-        arr = np.load(os.path.join(LARGE_DIR, f"fif_{i:03d}.npy"))
-        masks.append((arr > arr.mean()).astype(np.float64))
+        rows = [
+            np.concatenate(
+                [
+                    np.load(os.path.join(MASKS_DIR, f"child_{i:03d}_r{r}_c{c}.npy"))
+                    for c in range(NCOLS)
+                ],
+                axis=1,
+            )
+            for r in range(NROWS)
+        ]
+        masks.append(np.concatenate(rows, axis=0))
     return masks
 
 
-def subset_masks(mask, nrows=4, ncols=8):
+def subset_masks(mask, nrows=NROWS, ncols=NCOLS):
     """Split an 8192^2 mask into nrows x ncols sub-scenes (1024 x 2048)."""
     h, w = mask.shape
     sh, sw = h // nrows, w // ncols
@@ -33,8 +45,12 @@ def subset_masks(mask, nrows=4, ncols=8):
 
 
 def load_all_subscenes(n=N_ANALYSIS):
-    """Load n x 32 MODIS-like 1024x2048 sub-scenes."""
+    """Load all n x 32 MODIS-like 1024 x 2048 child sub-scenes directly."""
     scenes = []
-    for mask in load_large_masks(n):
-        scenes.extend(subset_masks(mask))
+    for i in range(n):
+        for r in range(NROWS):
+            for c in range(NCOLS):
+                scenes.append(
+                    np.load(os.path.join(MASKS_DIR, f"child_{i:03d}_r{r}_c{c}.npy"))
+                )
     return scenes

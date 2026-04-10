@@ -12,10 +12,10 @@ import os
 
 # ---------- Parameters ----------
 H = 0.25
-C1 = 0.05
+C1 = 0.1
 alpha = 1.8
 size = (16384, 16384)
-n_realizations = 30
+n_realizations = 50
 
 outdir = os.path.join(os.path.dirname(__file__), "..", "output", "large")
 os.makedirs(outdir, exist_ok=True)
