@@ -1,4 +1,4 @@
-# MODIS data clones using multifractal simulations
+# MODIS cloud mask clones using multifractal simulations
 
 This repo contains code to produce synthetic cloud masks using the FIF algorithm proposed by Lovejoy and Shertzer (2010), implemented via the Python package [`scaleinvariance`](https://github.com/thomasdewitt/scaleinvariance). 
 
