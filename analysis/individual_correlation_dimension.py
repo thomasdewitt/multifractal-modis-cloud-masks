@@ -22,7 +22,7 @@ Cl_full_list = []
 for i, m in enumerate(large_masks):
     print(f"  Full mask {i+1}/{len(large_masks)}...", flush=True)
     dim, err, bins, Cl = objscale.individual_correlation_dimension(
-        m, n=1, return_C_l=True, point_reduction_factor=10000
+        m, n=1, return_C_l=True, point_reduction_factor=10000, filled=False
     )
     Cl_full_list.append((dim, err, bins, Cl))
     print(f"    D_c = {dim:.3f} +/- {err:.3f}")
@@ -35,7 +35,7 @@ for i, m in enumerate(subscenes):
         print(f"  Sub-scene {i+1}/{len(subscenes)}...", flush=True)
     try:
         dim, err, bins, Cl = objscale.individual_correlation_dimension(
-            m, n=1, return_C_l=True, point_reduction_factor=10000
+            m, n=1, return_C_l=True, point_reduction_factor=10000, filled=False
         )
         Cl_sub_list.append((dim, err, bins, Cl))
     except ValueError:
